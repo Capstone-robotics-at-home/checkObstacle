@@ -7,6 +7,10 @@ class Obstacle():
     def __init__(self):
         self.obstacles = list()  #list of polytopes
         self.cart = pt.qhull(np.vstack([[0, 0], [1, 1], [2, 0], [1, -1]]))
+        self.goal = pt.qhull(np.vstack([[0, 0], [1, 1], [2, 0], [1, -1]]))
+
+    def update_goal(self,corners):
+        self.goal = pt.qhull(np.asarray(corners))
 
     def add_obstacle(self, corners):  #2d array, or 2d list
         p1 = pt.qhull(np.asarray(corners))
@@ -34,6 +38,16 @@ class Obstacle():
                     return False
         return True
 
+    def check_goal(self):
+        A=self.goal.A
+        b=self.goal.b
+        for point in pt.extreme(self.cart):
+            #if there is at least one extreme of the cart is out of the goal area, return false.
+            if (not(np.all(A @ point - b <= 0))):
+                return False
+        return True
+            
+
     def visualize(self):
         fig, ax = plt.subplots()
 
@@ -42,6 +56,12 @@ class Obstacle():
 
         self.cart.plot(ax,
                        color='pink',
+                       linestyle='solid',
+                       linewidth=1,
+                       alpha=0.5)
+
+        self.goal.plot(ax,
+                       color='green',
                        linestyle='solid',
                        linewidth=1,
                        alpha=0.5)
